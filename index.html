@@ -245,40 +245,54 @@
       justify-content: center;
     }
 
-    .guide-list {
+    /* Strip Progress Bar Waktu Menghafal 30 Detik */
+    .timer-strip {
       display: flex;
-      flex-direction: column;
-      gap: 9px;
-      text-align: left;
-      margin: 12px 0 16px;
-    }
-
-    .guide-item {
-      display: flex;
-      align-items: flex-start;
-      gap: 9px;
-      background: #f8fafc;
-      border: 1px solid var(--border);
+      align-items: center;
+      gap: 8px;
+      background: var(--surface);
+      border: 1.5px solid var(--border);
       border-radius: 12px;
-      padding: 9px 10px;
-      font-size: 12.5px;
-      line-height: 1.42;
-      color: var(--text-muted);
+      padding: 6px 10px;
+      flex-shrink: 0;
     }
 
-    .guide-num {
-      width: 22px;
-      height: 22px;
-      border-radius: 7px;
-      background: var(--primary);
-      color: #ffffff;
+    .timer-label {
       font-size: 11.5px;
       font-weight: 800;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-      margin-top: 1px;
+      color: var(--primary-dark);
+      white-space: nowrap;
+      min-width: 66px;
+    }
+
+    .timer-label.warning {
+      color: #b45309;
+    }
+
+    .timer-track {
+      flex: 1;
+      height: 9px;
+      border-radius: 999px;
+      background: #e2e8f0;
+      overflow: hidden;
+    }
+
+    .timer-fill {
+      height: 100%;
+      width: 100%;
+      border-radius: 999px;
+      background: linear-gradient(90deg, #2563eb, #10b981);
+      transition: width 0.1s linear, background 0.25s ease;
+    }
+
+    .timer-fill.warning {
+      background: linear-gradient(90deg, #f59e0b, #ef4444);
+    }
+
+    .ready-actions {
+      display: grid;
+      grid-template-columns: 1.25fr 0.85fr;
+      gap: 8px;
     }
 
     .level-grid-modal {
@@ -386,12 +400,14 @@
       display: flex;
       align-items: center;
       gap: 6px;
+      min-width: 0;
     }
 
     .table-title {
-      font-size: 16px;
+      font-size: 15px;
       font-weight: 800;
       color: var(--text-main);
+      white-space: nowrap;
     }
 
     .table-range {
@@ -401,6 +417,7 @@
       background: var(--primary-light);
       padding: 2px 7px;
       border-radius: 6px;
+      white-space: nowrap;
     }
 
     .hide-toggle-btn {
@@ -412,9 +429,10 @@
       border: 1.5px solid var(--border-strong);
       background: var(--surface);
       color: var(--text-muted);
-      font-size: 11.5px;
+      font-size: 11px;
       font-weight: 700;
       cursor: pointer;
+      flex-shrink: 0;
       transition: all 0.15s ease;
     }
 
@@ -1049,7 +1067,7 @@
       <section id="memorize-view" class="view-screen" aria-label="Sesi Menghafal">
         <div class="memorize-toolbar">
           <div class="table-heading">
-            <h2 id="mem-table-title" class="table-title">Sesi Menghafal • Level 1</h2>
+            <h2 id="mem-table-title" class="table-title">Hafalan • Level 1</h2>
             <span id="mem-table-range" class="table-range">1 × 2 s.d. 1 × 9</span>
           </div>
 
@@ -1057,6 +1075,14 @@
             <span id="hide-btn-icon">👁️</span>
             <span id="hide-btn-text">Sembunyikan Jawaban</span>
           </button>
+        </div>
+
+        <!-- Visualisasi Progres Bar Waktu Menghafal 30 Detik -->
+        <div id="memorize-timer-box" class="timer-strip" aria-label="Sisa waktu menghafal">
+          <span id="timer-label" class="timer-label">⏱️ 30 dtk</span>
+          <div class="timer-track">
+            <div id="timer-fill" class="timer-fill" style="width: 100%;"></div>
+          </div>
         </div>
 
         <!-- Grid Kartu Perkalian -->
@@ -1121,13 +1147,14 @@
     <div id="welcome-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="welcome-heading">
       <div class="result-card">
         <div class="welcome-badge" aria-hidden="true">
-          <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
-            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" fill="#facc15" stroke="#fde047"></polygon>
+          <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round">
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+            <line x1="18" y1="6" x2="6" y2="18"></line>
           </svg>
         </div>
         <h2 id="welcome-heading" class="result-heading">Game Perkalian</h2>
         <p class="result-desc">
-          Ayo taklukkan perkalian dari Level 1 sampai Level 9! Hafalkan polanya, lalu uji kemampuanmu di setiap tantangan.
+          Ayo taklukkan perkalian dari Level 1 sampai Level 9! Hafalkan kartunya dalam 30 detik, lalu jawab 5 soal tantangan di setiap level.
         </p>
         <button id="btn-welcome-start" type="button" class="primary-cta-btn">
           <span>Mulai Bermain</span>
@@ -1137,7 +1164,7 @@
     </div>
 
     <!-- =================================================================
-         POP-UP 2: PETUNJUK SESI MENGHAFAL ("SESI MENGHAFAL")
+         POP-UP 2: PETUNJUK SEDERHANA ("HAFALIN DULU YUK!")
          ================================================================= -->
     <div id="guide-modal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="guide-heading">
       <div class="result-card">
@@ -1147,24 +1174,35 @@
             <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
           </svg>
         </div>
-        <h2 id="guide-heading" class="result-heading">Sesi Menghafal</h2>
-        <div class="guide-list">
-          <div class="guide-item">
-            <span class="guide-num">1</span>
-            <span>Ketuk kartu angka untuk melihat ilustrasi kelompok titik penjumlahan berulang di kotak bawah.</span>
-          </div>
-          <div class="guide-item">
-            <span class="guide-num">2</span>
-            <span>Aktifkan tombol <strong>"Sembunyikan Jawaban"</strong> untuk menguji ingatan secara mandiri.</span>
-          </div>
-          <div class="guide-item">
-            <span class="guide-num">3</span>
-            <span>Tekan <strong>"Mulai Tantangan"</strong> jika sudah siap menjawab 5 soal.</span>
-          </div>
-        </div>
+        <h2 id="guide-heading" class="result-heading">Hafalin Dulu Yuk!</h2>
+        <p class="result-desc">
+          Kamu punya waktu <strong>30 detik</strong> untuk menghafal kartu perkalian. Ketuk kartu angka untuk melihat gambar titiknya ya!
+        </p>
         <button id="btn-guide-close" type="button" class="primary-cta-btn amber-cta">
-          <span>Siap Menghafal! 👍</span>
+          <span>Mulai Menghafal! 👍</span>
         </button>
+      </div>
+    </div>
+
+    <!-- =================================================================
+         POP-UP KONFIRMASI WAKTU HABIS ("SUDAH SIAP?")
+         ================================================================= -->
+    <div id="ready-modal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="ready-heading">
+      <div class="result-card">
+        <div class="guide-badge" aria-hidden="true">
+          <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="9"></circle>
+            <polyline points="12 7 12 12 15 14"></polyline>
+          </svg>
+        </div>
+        <h2 id="ready-heading" class="result-heading">Sudah Siap!</h2>
+        <p class="result-desc">
+          Waktu 30 detik sudah selesai. Yuk lanjut ke tantangan!
+        </p>
+        <div class="ready-actions">
+          <button id="btn-ready-no" type="button" class="secondary-btn">Belum, Sedikit Lagi</button>
+          <button id="btn-ready-yes" type="button" class="primary-cta-btn" style="min-height: 44px; padding: 10px 12px;">Ya</button>
+        </div>
       </div>
     </div>
 
@@ -1227,9 +1265,7 @@
             if (this.ctx && this.ctx.state === 'suspended') {
               this.ctx.resume();
             }
-          } catch (e) {
-            // Abaikan jika browser memblokir AudioContext
-          }
+          } catch (e) {}
         },
 
         playTone(freq, type, duration, delay, gainVal) {
@@ -1255,9 +1291,7 @@
 
             osc.start(now);
             osc.stop(now + duration + 0.02);
-          } catch (e) {
-            // Abaikan error audio agar interaksi UI tetap berjalan lancar
-          }
+          } catch (e) {}
         },
 
         tap() {
@@ -1265,8 +1299,8 @@
         },
 
         correct() {
-          this.playTone(523.25, 'triangle', 0.13, 0, 0.15);     // C5
-          this.playTone(659.25, 'triangle', 0.22, 0.09, 0.16);  // E5
+          this.playTone(523.25, 'triangle', 0.13, 0, 0.15);
+          this.playTone(659.25, 'triangle', 0.22, 0.09, 0.16);
         },
 
         wrong() {
@@ -1275,10 +1309,10 @@
         },
 
         fanfare() {
-          this.playTone(523.25, 'triangle', 0.14, 0, 0.15);     // C5
-          this.playTone(659.25, 'triangle', 0.14, 0.1, 0.15);   // E5
-          this.playTone(783.99, 'triangle', 0.16, 0.2, 0.16);   // G5
-          this.playTone(1046.5, 'triangle', 0.36, 0.31, 0.18);  // C6
+          this.playTone(523.25, 'triangle', 0.14, 0, 0.15);
+          this.playTone(659.25, 'triangle', 0.14, 0.1, 0.15);
+          this.playTone(783.99, 'triangle', 0.16, 0.2, 0.16);
+          this.playTone(1046.5, 'triangle', 0.36, 0.31, 0.18);
         }
       };
 
@@ -1288,25 +1322,28 @@
       const STORAGE_KEY = 'game_perkalian_progress_v1';
 
       const state = {
-        currentLevel: 1,         // 1..9
-        maxUnlockedLevel: 1,     // 1..9
-        completedLevels: [],     // array nomor level yang sudah lulus (>= 4/5)
-        levelStars: {},          // peta nomor level -> jumlah bintang tertinggi (0..3)
-        screen: 'memorize',      // 'memorize' | 'challenge'
+        currentLevel: 1,
+        maxUnlockedLevel: 1,
+        completedLevels: [],
+        levelStars: {},
+        screen: 'memorize',
 
-        // State Mode Hafalan
         hideAnswers: false,
         peekedKeys: new Set(),
-        selectedMultiplier: 2,   // Level 1 mulai dari 1x2; Level 2-9 mulai dari Nx1
+        selectedMultiplier: 2,
 
-        // State Mode Tantangan
         questions: [],
         qIndex: 0,
         score: 0,
-        stepHistory: [],         // array status tiap soal: 'pending' | 'correct' | 'wrong'
+        stepHistory: [],
         answeringLocked: false,
         advanceTimer: null,
-        toastTimer: null
+        toastTimer: null,
+
+        memorizeDurationMs: 30000,
+        memorizeRemainingMs: 30000,
+        memorizeInterval: null,
+        memorizePaused: false
       };
 
       function loadProgress() {
@@ -1328,9 +1365,7 @@
             state.currentLevel = lvl <= state.maxUnlockedLevel ? lvl : state.maxUnlockedLevel;
             state.selectedMultiplier = state.currentLevel === 1 ? 2 : 1;
           }
-        } catch (e) {
-          // Gunakan default jika localStorage tidak tersedia
-        }
+        } catch (e) {}
       }
 
       function saveProgress() {
@@ -1344,9 +1379,7 @@
               levelStars: state.levelStars
             })
           );
-        } catch (e) {
-          // Abaikan error penyimpanan
-        }
+        } catch (e) {}
       }
 
       /* =====================================================================
@@ -1360,20 +1393,20 @@
       const chalHeaderTitle = document.getElementById('chal-header-title');
       const chalHeaderProgress = document.getElementById('chal-header-progress');
 
-      // Halaman 1: Hafalan
       const memorizeView = document.getElementById('memorize-view');
       const memTableTitle = document.getElementById('mem-table-title');
       const memTableRange = document.getElementById('mem-table-range');
       const btnToggleHide = document.getElementById('btn-toggle-hide');
       const hideBtnIcon = document.getElementById('hide-btn-icon');
       const hideBtnText = document.getElementById('hide-btn-text');
+      const timerLabel = document.getElementById('timer-label');
+      const timerFill = document.getElementById('timer-fill');
       const factGrid = document.getElementById('fact-grid');
       const conceptSumText = document.getElementById('concept-sum-text');
       const dotGroupsWrap = document.getElementById('dot-groups-wrap');
       const btnStartChallenge = document.getElementById('btn-start-challenge');
       const startChallengeLabel = document.getElementById('start-challenge-label');
 
-      // Halaman 2: Tantangan
       const challengeView = document.getElementById('challenge-view');
       const btnBackMemorize = document.getElementById('btn-back-memorize');
       const progressSteps = document.getElementById('progress-steps');
@@ -1383,12 +1416,14 @@
       const qFeedback = document.getElementById('q-feedback');
       const optionsGrid = document.getElementById('options-grid');
 
-      // Toast & Modals
       const miniToast = document.getElementById('mini-toast');
       const welcomeModal = document.getElementById('welcome-modal');
       const btnWelcomeStart = document.getElementById('btn-welcome-start');
       const guideModal = document.getElementById('guide-modal');
       const btnGuideClose = document.getElementById('btn-guide-close');
+      const readyModal = document.getElementById('ready-modal');
+      const btnReadyNo = document.getElementById('btn-ready-no');
+      const btnReadyYes = document.getElementById('btn-ready-yes');
       const levelPickerModal = document.getElementById('level-picker-modal');
       const levelGridModal = document.getElementById('level-grid-modal');
       const btnClosePicker = document.getElementById('btn-close-picker');
@@ -1401,7 +1436,7 @@
       const resultActions = document.getElementById('result-actions');
 
       /* =====================================================================
-         UTILITAS UMUM
+         UTILITAS & KONTROL TIMER 30 DETIK MENGHAFAL
          ===================================================================== */
       function shuffle(arr) {
         const copy = arr.slice();
@@ -1413,8 +1448,6 @@
       }
 
       function getMultipliersForLevel(level) {
-        // Level 1: 1x2 sampai 1x9 (8 item)
-        // Level 2..9: Nx1 sampai Nx9 (9 item)
         const start = level === 1 ? 2 : 1;
         const list = [];
         for (let b = start; b <= 9; b++) {
@@ -1437,6 +1470,49 @@
         state.toastTimer = setTimeout(() => {
           miniToast.classList.add('hidden');
         }, 2000);
+      }
+
+      function stopMemorizeTimer() {
+        if (state.memorizeInterval) {
+          clearInterval(state.memorizeInterval);
+          state.memorizeInterval = null;
+        }
+      }
+
+      function updateTimerDisplay() {
+        const ratio = Math.max(0, Math.min(1, state.memorizeRemainingMs / state.memorizeDurationMs));
+        const secLeft = Math.ceil(state.memorizeRemainingMs / 1000);
+        timerFill.style.width = `${(ratio * 100).toFixed(1)}%`;
+        timerLabel.textContent = `⏱️ ${secLeft} dtk`;
+
+        const isWarning = secLeft <= 8;
+        timerLabel.classList.toggle('warning', isWarning);
+        timerFill.classList.toggle('warning', isWarning);
+      }
+
+      function startMemorizeTimer(resetDuration) {
+        stopMemorizeTimer();
+        readyModal.classList.add('hidden');
+        if (resetDuration) {
+          state.memorizeRemainingMs = state.memorizeDurationMs;
+        }
+        state.memorizePaused = false;
+        updateTimerDisplay();
+
+        state.memorizeInterval = setInterval(() => {
+          if (state.screen !== 'memorize' || state.memorizePaused) return;
+          state.memorizeRemainingMs -= 100;
+
+          if (state.memorizeRemainingMs <= 0) {
+            state.memorizeRemainingMs = 0;
+            updateTimerDisplay();
+            stopMemorizeTimer();
+            SoundFX.tap();
+            readyModal.classList.remove('hidden');
+          } else {
+            updateTimerDisplay();
+          }
+        }, 100);
       }
 
       /* =====================================================================
@@ -1473,6 +1549,7 @@
       }
 
       function openLevelPickerModal() {
+        state.memorizePaused = true;
         const tiles = [];
         for (let lvl = 1; lvl <= 9; lvl++) {
           const isCompleted = state.completedLevels.includes(lvl);
@@ -1529,13 +1606,13 @@
         state.peekedKeys.clear();
         state.selectedMultiplier = level === 1 ? 2 : 1;
         saveProgress();
-        openMemorizeView(bounceFirstCard);
+        openMemorizeView(bounceFirstCard, true);
       }
 
       /* =====================================================================
-         HALAMAN 1: RENDER MODE HAFALAN (SESI MENGHAFAL)
+         HALAMAN 1: RENDER MODE HAFALAN (SESI MENGHAFAL PERKALIAN)
          ===================================================================== */
-      function openMemorizeView(animateSelected) {
+      function openMemorizeView(animateSelected, resetTimer) {
         clearAdvanceTimer();
         state.screen = 'memorize';
         memorizeView.classList.remove('hidden');
@@ -1543,26 +1620,25 @@
 
         renderHeader();
 
-        const lvl = state.currentLevel;
-        const multipliers = getMultipliersForLevel(lvl);
+        const multiplierA = state.currentLevel;
+        const multipliersB = getMultipliersForLevel(multiplierA);
 
-        memTableTitle.textContent = `Sesi Menghafal • Level ${lvl}`;
-        memTableRange.textContent = lvl === 1 ? '1 × 2 s.d. 1 × 9' : `${lvl} × 1 s.d. ${lvl} × 9`;
-        startChallengeLabel.textContent = `Mulai Tantangan Level ${lvl}`;
+        memTableTitle.textContent = `Hafalan • Level ${multiplierA}`;
+        memTableRange.textContent =
+          multiplierA === 1 ? '1 × 2 s.d. 1 × 9' : `${multiplierA} × 1 s.d. ${multiplierA} × 9`;
+        startChallengeLabel.textContent = `Mulai Tantangan Level ${multiplierA}`;
 
-        // Update tombol Sembunyikan Jawaban
         btnToggleHide.classList.toggle('active', state.hideAnswers);
         btnToggleHide.setAttribute('aria-pressed', String(state.hideAnswers));
         hideBtnIcon.textContent = state.hideAnswers ? '🙈' : '👁️';
         hideBtnText.textContent = state.hideAnswers ? 'Tampilkan Jawaban' : 'Sembunyikan Jawaban';
 
-        // Atur grid 2x4 untuk Level 1 (8 kartu) dan 3x3 untuk Level 2-9 (9 kartu)
-        factGrid.className = lvl === 1 ? 'fact-grid grid-2x4' : 'fact-grid grid-3x3';
+        factGrid.className = multiplierA === 1 ? 'fact-grid grid-2x4' : 'fact-grid grid-3x3';
 
-        factGrid.innerHTML = multipliers
+        factGrid.innerHTML = multipliersB
           .map((b) => {
-            const product = lvl * b;
-            const key = `${lvl}x${b}`;
+            const product = multiplierA * b;
+            const key = `${multiplierA}x${b}`;
             const isSelected = state.selectedMultiplier === b;
             const isConcealed = state.hideAnswers && !state.peekedKeys.has(key);
 
@@ -1571,10 +1647,10 @@
                 type="button"
                 class="fact-card ${isSelected ? 'selected' : ''}"
                 data-b="${b}"
-                aria-label="${lvl} kali ${b} sama dengan ${isConcealed ? 'tersembunyi' : product}"
+                aria-label="${multiplierA} kali ${b} sama dengan ${isConcealed ? 'tersembunyi' : product}"
               >
                 <div class="fact-expr">
-                  <span>${lvl}</span>
+                  <span>${multiplierA}</span>
                   <span class="fact-op">×</span>
                   <span>${b}</span>
                   <span>=</span>
@@ -1589,11 +1665,10 @@
           })
           .join('');
 
-        // Event klik pada tiap kartu perkalian
         factGrid.querySelectorAll('.fact-card').forEach((card) => {
           card.addEventListener('click', () => {
             const b = Number(card.dataset.b);
-            const key = `${lvl}x${b}`;
+            const key = `${multiplierA}x${b}`;
             SoundFX.tap();
 
             state.selectedMultiplier = b;
@@ -1605,11 +1680,10 @@
               }
             }
 
-            openMemorizeView(true);
+            openMemorizeView(true, false);
           });
         });
 
-        // Animasi pantul pada kartu yang baru diketuk
         if (animateSelected) {
           const activeCard = factGrid.querySelector(`.fact-card[data-b="${state.selectedMultiplier}"]`);
           if (activeCard) {
@@ -1619,16 +1693,22 @@
           }
         }
 
-        renderConceptBox(lvl, state.selectedMultiplier);
+        renderConceptBox(multiplierA, state.selectedMultiplier);
+
+        if (resetTimer) {
+          startMemorizeTimer(true);
+        }
       }
 
       function renderConceptBox(a, b) {
-        const product = a * b;
-        // Tampilkan konsep a kelompok berisi b (misal 2 x 3 = 3 + 3 = 6)
-        const terms = Array.from({ length: a }, () => b).join(' + ');
-        conceptSumText.textContent = a === 1 ? `1 kelompok berisi ${b} = ${product}` : `${terms} = ${product}`;
+        const total = a * b;
+        if (a === 1) {
+          conceptSumText.textContent = `1 kelompok berisi ${b} = ${total}`;
+        } else {
+          const terms = Array.from({ length: a }, () => b).join(' + ');
+          conceptSumText.textContent = `${terms} = ${total}`;
+        }
 
-        // Render kelompok titik berwarna
         const clusters = [];
         for (let g = 0; g < a; g++) {
           const dots = Array.from({ length: b }, () => '<span class="concept-dot"></span>').join('');
@@ -1644,32 +1724,27 @@
         const correct = a * b;
         const candidates = new Set();
 
-        // Pengecoh cerdas: kelipatan terdekat dan kesalahan penjumlahan
-        const nearMultiples = [
-          a * (b + 1),
-          b > 1 ? a * (b - 1) : a * (b + 2),
-          (a + 1) * b,
-          a > 1 ? (a - 1) * b : (a + 2) * b,
-          a + b,
+        const nearValues = [
+          correct + a,
+          correct - a,
+          correct + b,
+          correct - b,
           correct + 1,
           correct - 1,
           correct + 2,
-          correct - 2,
-          correct + a
+          a + b
         ];
 
-        for (const val of shuffle(nearMultiples)) {
-          if (val > 0 && val !== correct && !candidates.has(val)) {
+        for (const val of shuffle(nearValues)) {
+          if (val >= 1 && val <= 99 && val !== correct && !candidates.has(val)) {
             candidates.add(val);
             if (candidates.size === 3) break;
           }
         }
 
-        // Pengaman jika masih kurang dari 3 pengecoh
         let fallback = 1;
         while (candidates.size < 3) {
-          const val = correct + fallback;
-          if (val !== correct) candidates.add(val);
+          if (fallback !== correct) candidates.add(fallback);
           fallback++;
         }
 
@@ -1677,20 +1752,21 @@
       }
 
       function startChallengeMode() {
+        stopMemorizeTimer();
         clearAdvanceTimer();
+        readyModal.classList.add('hidden');
         resultModal.classList.add('hidden');
         state.screen = 'challenge';
 
-        const lvl = state.currentLevel;
-        const pool = getMultipliersForLevel(lvl);
-        // Acak 5 soal unik tanpa kembar
+        const a = state.currentLevel;
+        const pool = getMultipliersForLevel(a);
         const chosenB = shuffle(pool).slice(0, 5);
 
         state.questions = chosenB.map((b) => ({
-          a: lvl,
+          a: a,
           b: b,
-          answer: lvl * b,
-          options: generateSmartOptions(lvl, b)
+          answer: a * b,
+          options: generateSmartOptions(a, b)
         }));
 
         state.qIndex = 0;
@@ -1710,7 +1786,6 @@
         state.answeringLocked = false;
         renderHeader();
 
-        // Render progres 5 langkah
         progressSteps.innerHTML = state.stepHistory
           .map((status) => `<span class="step-dot ${status}"></span>`)
           .join('');
@@ -1745,7 +1820,6 @@
         const q = state.questions[state.qIndex];
         const isCorrect = chosenVal === q.answer;
 
-        // Buka tanda tanya pada persamaan soal
         qEquation.innerHTML = `${q.a} × ${q.b} = <span style="color:var(--emerald-dark)">${q.answer}</span>`;
 
         const allBtns = optionsGrid.querySelectorAll('.option-btn');
@@ -1769,7 +1843,7 @@
 
           const praises = [
             'Hebat! Jawabanmu benar!',
-            'Keren! Tepat sekali!',
+            'Keren! Perkaliannya tepat!',
             'Pintar! Terus pertahankan!',
             'Mantap! Cepat dan tepat!'
           ];
@@ -1782,12 +1856,10 @@
           qFeedback.className = 'q-feedback visible is-wrong';
         }
 
-        // Perbarui tampilan titik progres
         progressSteps.innerHTML = state.stepHistory
           .map((status) => `<span class="step-dot ${status}"></span>`)
           .join('');
 
-        const delayMs = 1100;
         state.advanceTimer = setTimeout(() => {
           if (state.screen !== 'challenge') return;
           if (state.qIndex < 4) {
@@ -1797,7 +1869,7 @@
           } else {
             finishChallengeLevel();
           }
-        }, delayMs);
+        }, 1100);
       }
 
       /* =====================================================================
@@ -1833,14 +1905,13 @@
           saveProgress();
         }
 
-        // Kasus Khusus: Level 9 Lulus (Tamat Semua Level 1–Level 9!)
         if (passed && lvl === 9) {
           resultVisualTop.innerHTML = `<div class="result-trophy">🏆🎉</div>`;
           resultHeading.textContent = 'Selamat! Tamat Level 1–Level 9!';
           resultScorePill.textContent = `${score} / 5 Benar!`;
           resultScorePill.className = 'result-score-pill pass';
           resultDesc.textContent =
-            'Luar biasa! Kamu sudah menaklukkan semua tantangan dari Level 1 sampai Level 9!';
+            'Luar biasa! Kamu sudah menaklukkan semua tantangan perkalian dari Level 1 sampai Level 9!';
 
           resultActions.innerHTML = `
             <button id="btn-res-restart-all" type="button" class="primary-cta-btn">
@@ -1862,7 +1933,6 @@
             selectLevel(1, true);
           });
         } else if (passed) {
-          // Lulus Level 1–8 -> Siap Lanjut ke Level [N+1]
           const starCount = score === 5 ? 3 : 2;
           resultVisualTop.innerHTML = `<div class="stars-container">${[0, 1, 2]
             .map((i) => buildStarSvg(i < starCount))
@@ -1870,7 +1940,7 @@
           resultHeading.textContent = score === 5 ? 'Sempurna!' : 'Hebat Sekali!';
           resultScorePill.textContent = `${score} / 5 Benar!`;
           resultScorePill.className = 'result-score-pill pass';
-          resultDesc.textContent = `Kamu menguasai Level ${lvl}! Ayo lanjut ke Sesi Menghafal Level ${lvl + 1}.`;
+          resultDesc.textContent = `Kamu menguasai perkalian Level ${lvl}! Ayo lanjut ke Sesi Menghafal Level ${lvl + 1}.`;
 
           resultActions.innerHTML = `
             <button id="btn-res-next-level" type="button" class="primary-cta-btn">
@@ -1888,7 +1958,6 @@
             selectLevel(lvl + 1, true);
           });
         } else {
-          // Skor < 4 -> Ajak menghafal ulang atau mengulangi tantangan
           resultVisualTop.innerHTML = `<div class="stars-container">${[0, 1, 2]
             .map((i) => buildStarSvg(i < 1))
             .join('')}</div>`;
@@ -1909,13 +1978,12 @@
           `;
         }
 
-        // Pasang listener tombol sekunder yang selalu tersedia
         const btnMem = document.getElementById('btn-res-memorize');
         if (btnMem) {
           btnMem.addEventListener('click', () => {
             SoundFX.tap();
             resultModal.classList.add('hidden');
-            openMemorizeView(true);
+            openMemorizeView(true, true);
           });
         }
 
@@ -1943,12 +2011,29 @@
       btnGuideClose.addEventListener('click', () => {
         SoundFX.tap();
         guideModal.classList.add('hidden');
-        openMemorizeView(true);
+        if (state.memorizeInterval) {
+          state.memorizePaused = false;
+        } else {
+          openMemorizeView(true, true);
+        }
       });
 
       btnHelpMemorize.addEventListener('click', () => {
         SoundFX.tap();
+        state.memorizePaused = true;
         guideModal.classList.remove('hidden');
+      });
+
+      btnReadyNo.addEventListener('click', () => {
+        SoundFX.tap();
+        readyModal.classList.add('hidden');
+        openMemorizeView(true, true);
+      });
+
+      btnReadyYes.addEventListener('click', () => {
+        SoundFX.tap();
+        readyModal.classList.add('hidden');
+        startChallengeMode();
       });
 
       btnLevelPicker.addEventListener('click', () => {
@@ -1959,6 +2044,7 @@
       btnClosePicker.addEventListener('click', () => {
         SoundFX.tap();
         levelPickerModal.classList.add('hidden');
+        state.memorizePaused = false;
       });
 
       btnSound.addEventListener('click', () => {
@@ -1971,7 +2057,7 @@
         SoundFX.tap();
         state.hideAnswers = !state.hideAnswers;
         state.peekedKeys.clear();
-        openMemorizeView(false);
+        openMemorizeView(false, false);
       });
 
       btnStartChallenge.addEventListener('click', () => {
@@ -1981,12 +2067,12 @@
 
       btnBackMemorize.addEventListener('click', () => {
         SoundFX.tap();
-        openMemorizeView(false);
+        openMemorizeView(false, true);
       });
 
-      // Muat progres tersimpan & siapkan Sesi Menghafal di balik Pop-Up Awal "Game Perkalian"
       loadProgress();
-      openMemorizeView(false);
+      openMemorizeView(false, false);
+      updateTimerDisplay();
     })();
   </script>
 </body>
